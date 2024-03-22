@@ -14,26 +14,26 @@ if (!isset($_SESSION['user_id'])) {
 
 $redisClient = new RedisClient();
 $userId = $_SESSION['user_id'];
-var_dump($userId);
+// Assuming the var_dump is for debugging purposes, it should be removed in production code.
+// var_dump($userId);
+
 // Check if the is_active flag is set for the current user
 $isActive = $redisClient->get("user:is_active:$userId");
 
 if ($isActive) {
     echo "You are already logged in from another location.";
     // Provide a button to force logout from the other session
-    echo '<form action="/logout.php" method="post">';
-    echo '<input type="hidden" name="userId" value="' . htmlspecialchars($userId) . '">';
-    echo '<button type="submit">Logout</button>';
-    echo '</form>';
+    echo '<p><a href="logout.php">Logout</a></p>';
     exit;
 } else {
     // Generate a random ID
     $randomId = bin2hex(random_bytes(16)); // 32 characters long
 
-    $redisClient->set("user:is_active:$userId", true);
+    // Set the is_active flag for the user
+    $redisClient->set("user:is_active:$userId", 'true');
 
     // Associate this random ID with user_id in Redis
-    $redisClient->set("user:{$userId}", $randomId);
+    $redisClient->set("user:session:$userId", $randomId);
 }
 ?>
 

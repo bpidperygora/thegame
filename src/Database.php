@@ -19,7 +19,7 @@ class Database
     /**
      * Establishes a database connection.
      * 
-     * @return PDO|null
+     * @return PDO|null The PDO connection object or null on failure.
      */
     public function connect(): ?PDO
     {
@@ -33,7 +33,8 @@ class Database
                 ];
                 $this->conn = new PDO($dsn, $this->user, $this->pass, $options);
             } catch (PDOException $e) {
-                echo "Connection error: " . $e->getMessage();
+                // Securely log the error instead of echoing it
+                error_log("Connection error: " . $e->getMessage());
                 $this->conn = null;
             }
         }

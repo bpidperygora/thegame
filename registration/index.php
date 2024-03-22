@@ -16,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
 
+    // Input validation and sanitization should be performed here
+
     if ($registration->registerUser($username, $email, $password)) {
         // Registration successful, redirect or show a success message.
         header('Location: /index.php?message=Registration successful. Please log in.');
@@ -45,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <body>
     <?php if ($message) : ?>
-        <p><?php echo $message; ?></p>
+        <p><?php echo htmlspecialchars($message); ?></p>
     <?php endif; ?>
     <form method="post" action="">
         <label for="username">Username:</label>

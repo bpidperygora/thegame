@@ -6,14 +6,17 @@ use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use Clue\React\Redis\Factory;
 use Clue\React\Redis\Client as RedisClient;
+use SplObjectStorage;
 
-class Connector implements MessageComponentInterface {
+class Connector implements MessageComponentInterface
+{
     protected $clients;
     protected $clientInfo;
     private $loop;
 
-    public function __construct($loop) {
-        $this->clients = new \SplObjectStorage();
+    public function __construct($loop)
+    {
+        $this->clients = new SplObjectStorage();
         $this->clientInfo = [];
         $this->loop = $loop;
         $this->subscribeToLogoutChannel();
@@ -21,13 +24,15 @@ class Connector implements MessageComponentInterface {
     }
 
 
-    public function onOpen(ConnectionInterface $conn) {
+    public function onOpen(ConnectionInterface $conn)
+    {
         // Store the new connection
         $this->clients->attach($conn);
         echo "New connection! ({$conn->resourceId})\n";
     }
 
-    public function onMessage(ConnectionInterface $from, $msg) {
+    public function onMessage(ConnectionInterface $from, $msg)
+    {
         $data = json_decode($msg, true);
 
         // Handle registration messages
@@ -36,8 +41,6 @@ class Connector implements MessageComponentInterface {
             echo "Connection {$from->resourceId} registered with ID {$data['id']}\n";
         }
 
-        // Example of broadcasting a message (not required for logout functionality)
-        // This part can be customized or removed based on your application's needs
         foreach ($this->clients as $client) {
             if ($from !== $client) {
                 $client->send($msg);
@@ -45,8 +48,8 @@ class Connector implements MessageComponentInterface {
         }
     }
 
-    public function onClose(ConnectionInterface $conn) {
-        // The connection is closed, remove it and its associated info
+    public function onClose(ConnectionInterface $conn): void
+    {
         if (isset($this->clientInfo[$conn->resourceId])) {
             unset($this->clientInfo[$conn->resourceId]);
         }
@@ -54,8 +57,8 @@ class Connector implements MessageComponentInterface {
         echo "Connection {$conn->resourceId} has disconnected\n";
     }
 
-    public function onError(ConnectionInterface $conn, \Exception $e) {
-        // An error has occurred with the connection
+    public function onError(ConnectionInterface $conn, \Exception $e): void
+    {
         echo "An error has occurred: {$e->getMessage()}\n";
         $conn->close();
     }
@@ -64,7 +67,8 @@ class Connector implements MessageComponentInterface {
      * Triggers the logout action for connections associated with a given ID.
      * @param string $id The random ID associated with the user/session.
      */
-    public function triggerLogoutById($id) {
+    public function triggerLogoutById($id)
+    {
         foreach ($this->clientInfo as $resourceId => $clientId) {
             if ($clientId === $id) {
                 // Find the connection object
@@ -78,7 +82,8 @@ class Connector implements MessageComponentInterface {
             }
         }
     }
-    private function subscribeToLogoutChannel() {
+    private function subscribeToLogoutChannel()
+    {
         $factory = new Factory($this->loop);
         $factory->createClient('localhost:6379')->then(function (RedisClient $client) {
             $client->subscribe('logout_channel');

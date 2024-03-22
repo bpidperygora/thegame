@@ -11,12 +11,26 @@ class Login
     private PDO $db;
     private RedisClient $redisClient;
 
+    /**
+     * Constructor for the Login class.
+     *
+     * @param PDO $db Database connection object.
+     * @param RedisClient $redisClient Redis client object.
+     */
     public function __construct(PDO $db, RedisClient $redisClient)
     {
         $this->db = $db;
         $this->redisClient = $redisClient;
     }
 
+    /**
+     * Authenticates a user by their email and password.
+     *
+     * @param string $email User's email address.
+     * @param string $password User's password.
+     * @return bool True if authentication is successful, false otherwise.
+     * @throws Exception Throws an exception if there is a database error.
+     */
     public function authenticate(string $email, string $password): bool
     {
         $sql = "SELECT id, password FROM players WHERE email = ?";
@@ -43,6 +57,7 @@ class Login
 
             return false;
         } catch (PDOException $e) {
+            // Rethrow the exception with a custom message
             throw new Exception("Authentication error: " . $e->getMessage());
         }
     }

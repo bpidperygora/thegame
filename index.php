@@ -14,7 +14,7 @@ $message = '';
 $redisClient = new RedisClient();
 
 if (isset($_GET['message'])) {
-    $message = $_GET['message'];
+    $message = htmlspecialchars($_GET['message']);
 }
 
 // Check if the user is already logged in by checking the session.
@@ -29,6 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
+
+    // Input validation and sanitization should be performed here
 
     if ($login->authenticate($email, $password)) {
         // Redirect to welcome page upon successful login.
